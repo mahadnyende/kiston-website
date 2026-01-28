@@ -244,3 +244,32 @@ export const addTestimonial = async (testimonial: Omit<Testimonial, 'id' | 'crea
     throw error;
   }
 };
+
+// Catering Inquiries
+export interface CateringInquiry {
+  id?: string;
+  name: string;
+  phone: string;
+  email?: string;
+  eventType: string;
+  date: string;
+  time?: string;
+  guests: number;
+  message?: string;
+  status: 'pending' | 'contacted' | 'confirmed' | 'cancelled';
+  createdAt?: Date;
+}
+
+export const createCateringInquiry = async (inquiry: Omit<CateringInquiry, 'id' | 'status' | 'createdAt'>) => {
+  try {
+    const docRef = await addDoc(collection(db, 'catering-inquiries'), {
+      ...inquiry,
+      status: 'pending',
+      createdAt: new Date(),
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating catering inquiry:', error);
+    throw error;
+  }
+};

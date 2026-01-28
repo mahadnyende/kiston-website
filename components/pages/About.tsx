@@ -49,7 +49,7 @@ const About = () => {
       description: "Rigorous hygiene standards and safe practices are our top priorities."
     }
   ];
-
+   
   return (
     <div className="min-h-screen">
       {/* Hero Section */}

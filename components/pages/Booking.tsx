@@ -55,10 +55,8 @@ const Booking = () => {
         date: formData.date,
         time: formData.time,
         guests: parseInt(formData.guests),
-        occasion: formData.occasion || null,
-        specialRequests: formData.specialRequests || null,
-        status: 'pending',
-        createdAt: new Date()
+        occasion: formData.occasion || undefined,
+        specialRequests: formData.specialRequests || undefined
       });
 
       setIsSubmitted(true);
