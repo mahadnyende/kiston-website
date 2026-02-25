@@ -69,6 +69,8 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredDishes] = useState<MenuItem[]>(FEATURED_DISHES_FALLBACK);
   const [testimonials, setTestimonials] = useState<Testimonial[]>(TESTIMONIALS_FALLBACK);
+  const testimonialCount = testimonials.length;
+  const activeSlide = testimonialCount > 0 ? currentSlide % testimonialCount : 0;
 
   const services = [
     { name: "Corporate Catering", image: "/images/gallery/services1.webp" },
@@ -85,31 +87,33 @@ const Home = () => {
   ];
 
   useEffect(() => {
-    const fetchData = async () => {
+    let isMounted = true;
+
+    const fetchTestimonials = async () => {
       try {
         const testimonialsData = await getTestimonials(true);
-        setTestimonials(
-          testimonialsData.length > 0 ? testimonialsData : TESTIMONIALS_FALLBACK,
-        );
+        if (!isMounted) return;
+
+        setTestimonials(testimonialsData.length > 0 ? testimonialsData : TESTIMONIALS_FALLBACK);
       } catch (error) {
         console.error("Error fetching home data:", error);
       }
     };
 
-    fetchData();
+    fetchTestimonials();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
-    setCurrentSlide(0);
-  }, [testimonials.length]);
-
-  useEffect(() => {
-    if (testimonials.length === 0) return;
+    if (testimonialCount === 0) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % testimonials.length);
+      setCurrentSlide((prev) => (prev + 1) % testimonialCount);
     }, 5000);
     return () => clearInterval(timer);
-  }, [testimonials.length]);
+  }, [testimonialCount]);
 
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
@@ -309,7 +313,7 @@ const Home = () => {
           <div className="relative">
             <div className="overflow-hidden">
               <motion.div
-                animate={{ x: -currentSlide * 100 + "%" }}
+                animate={{ x: -activeSlide * 100 + "%" }}
                 transition={{ duration: 0.5 }}
                 className="flex"
               >
@@ -330,13 +334,21 @@ const Home = () => {
             </div>
 
             <button
-              onClick={() => setCurrentSlide((prev) => (prev - 1 + testimonials.length) % testimonials.length)}
+              onClick={() =>
+                setCurrentSlide((prev) =>
+                  testimonialCount > 0 ? (prev - 1 + testimonialCount) % testimonialCount : 0,
+                )
+              }
               className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors duration-200"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button
-              onClick={() => setCurrentSlide((prev) => (prev + 1) % testimonials.length)}
+              onClick={() =>
+                setCurrentSlide((prev) =>
+                  testimonialCount > 0 ? (prev + 1) % testimonialCount : 0,
+                )
+              }
               className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors duration-200"
             >
               <ChevronRight className="w-6 h-6" />
