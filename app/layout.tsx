@@ -23,6 +23,10 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kistonhighway.com"),
+  alternates: {
+    canonical: "/",
+  },
   title: "Kiston Highway Restaurant | Best Roadside Food Stop & Authentic African Cuisine, Magamaga",
   description: "Experience the rich, authentic flavors of Africa at Kiston Highway Restaurant. The best stopover on Jinja–Busia Highway in Magamaga. Fresh beef pilau, tilapia, clean washrooms, and secure parking.",
   keywords: [
@@ -39,6 +43,35 @@ export const metadata: Metadata = {
     "beef pilau Magamaga",
     "tilapia restaurant Jinja–Busia Highway"
   ].join(", "),
+  openGraph: {
+    type: "website",
+    url: "https://kistonhighway.com",
+    siteName: "Kiston Highway Restaurant",
+    title:
+      "Kiston Highway Restaurant | Best Roadside Food Stop & Authentic African Cuisine, Magamaga",
+    description:
+      "Authentic African cuisine in Magamaga along Jinja–Busia Highway, with secure parking and clean facilities.",
+    images: [
+      {
+        url: "/images/authentic-cuisine.webp",
+        width: 1200,
+        height: 630,
+        alt: "Kiston Highway Restaurant",
+      },
+    ],
+    locale: "en_UG",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -50,9 +83,9 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Restaurant",
     "name": "Kiston Highway Restaurant",
-    "image": "https://kiston.site/images/authentic-cuisine.webp",
-    "@id": "https://kiston.site",
-    "url": "https://kiston.site",
+    "image": "https://kistonhighway.com/images/authentic-cuisine.webp",
+    "@id": "https://kistonhighway.com",
+    "url": "https://kistonhighway.com",
     "telephone": "+256700102281",
     "address": {
       "@type": "PostalAddress",
@@ -80,7 +113,7 @@ export default function RootLayout({
       "opens": "00:00",
       "closes": "23:59"
     },
-    "menu": "https://kiston.site/menu",
+    "menu": "https://kistonhighway.com/menu",
     "servesCuisine": ["African", "Ugandan", "Continental"],
     "priceRange": "$$"
   };

@@ -5,16 +5,46 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, Phone, MessageCircle } from "lucide-react";
-import { getTestimonials, getMenuItems, Testimonial, MenuItem } from "@/lib/firebase-utils";
+import { getTestimonials, Testimonial, MenuItem } from "@/lib/firebase-utils";
 
-const normalizeMenuImagePath = (path: string) =>
-  path.startsWith("/images/menu/") ? path.replace(/\.png$/i, ".webp") : path;
+const FEATURED_DISHES_FALLBACK: MenuItem[] = [
+  {
+    id: "1",
+    name: "Beef Pilau",
+    description: "Fragrant rice dish cooked with tender beef and aromatic spices.",
+    image: "/images/menu/beef-pilau.webp",
+    price: 15.99,
+    category: "Main Meals",
+    available: true,
+    ingredients: [],
+  },
+  {
+    id: "2",
+    name: "Authentic Katogo",
+    description:
+      "Hearty breakfast blend of matooke, cassava, and offals - a traveler favorite.",
+    image: "/images/menu/katogo.webp",
+    price: 12.99,
+    category: "Local Specialties",
+    available: true,
+    ingredients: [],
+  },
+  {
+    id: "3",
+    name: "Whole Fried Tilapia",
+    description: "Crispy whole tilapia fish, seasoned and deep-fried to perfection.",
+    image: "/images/menu/whole-tilapia.webp",
+    price: 18.99,
+    category: "Main Meals",
+    available: true,
+    ingredients: [],
+  },
+];
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [featuredDishes, setFeaturedDishes] = useState<MenuItem[]>([]);
+  const [featuredDishes] = useState<MenuItem[]>(FEATURED_DISHES_FALLBACK);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const services = [
     { name: "Corporate Catering", image: "/images/gallery/services1.webp" },
@@ -33,53 +63,7 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        const [dishesData, testimonialsData] = await Promise.all([
-          getMenuItems(),
-          getTestimonials(true)
-        ]);
-
-        if (dishesData.length > 0) {
-          setFeaturedDishes(
-            dishesData.slice(0, 3).map((dish) => ({
-              ...dish,
-              image: normalizeMenuImagePath(dish.image),
-            })),
-          );
-        } else {
-          setFeaturedDishes([
-            {
-              id: "1",
-              name: "Beef Pilau",
-              description: "Fragrant rice dish cooked with tender beef and aromatic spices.",
-              image: "/images/menu/beef-pilau.webp",
-              price: 15.99,
-              category: "Main Meals",
-              available: true,
-              ingredients: []
-            },
-            {
-              id: "2",
-              name: "Authentic Katogo",
-              description: "Hearty breakfast blend of matooke, cassava, and offals - a traveler favorite.",
-              image: "/images/menu/katogo.webp",
-              price: 12.99,
-              category: "Local Specialties",
-              available: true,
-              ingredients: []
-            },
-            {
-              id: "3",
-              name: "Whole Fried Tilapia",
-              description: "Crispy whole tilapia fish, seasoned and deep-fried to perfection.",
-              image: "/images/menu/whole-tilapia.webp",
-              price: 18.99,
-              category: "Main Meals",
-              available: true,
-              ingredients: []
-            }
-          ]);
-        }
+        const testimonialsData = await getTestimonials(true);
 
         if (testimonialsData.length > 0) {
           setTestimonials(testimonialsData);
@@ -92,8 +76,6 @@ const Home = () => {
         }
       } catch (error) {
         console.error("Error fetching home data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -192,6 +174,7 @@ const Home = () => {
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     quality={85}
+                    priority={index === 0}
                     className="object-cover"
                   />
                 </div>

@@ -1,18 +1,18 @@
-"use client";
+import type { Metadata } from "next";
 
-import { motion } from "framer-motion";
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "Privacy policy for Kiston Highway Restaurant website and services.",
+  alternates: {
+    canonical: "/privacy",
+  },
+};
 
 export default function PrivacyPolicy() {
     return (
         <div className="min-h-screen bg-white py-20 px-4">
             <div className="max-w-4xl mx-auto">
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-4xl font-bold text-gray-900 mb-8"
-                >
-                    Privacy Policy
-                </motion.h1>
+                <h1 className="text-4xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
 
                 <div className="prose prose-amber max-w-none space-y-6 text-gray-700">
                     <section>
