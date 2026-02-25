@@ -3,100 +3,147 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Star, Phone, MessageCircle, MapPin } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ChevronLeft, ChevronRight, Star, Phone, MessageCircle } from "lucide-react";
+import { getTestimonials, getMenuItems, Testimonial, MenuItem } from "@/lib/firebase-utils";
+
+const normalizeMenuImagePath = (path: string) =>
+  path.startsWith("/images/menu/") ? path.replace(/\.png$/i, ".webp") : path;
 
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  const featuredDishes = [
-    {
-      id: 1,
-      name: "Jollof Rice",
-      description: "Traditional West African rice dish with rich tomato sauce",
-      image: "🍚",
-      price: "$15.99"
-    },
-    {
-      id: 2,
-      name: "Suya Skewers",
-      description: "Grilled spiced meat skewers with peanut sauce",
-      image: "🍢",
-      price: "$12.99"
-    },
-    {
-      id: 3,
-      name: "Egusi Soup",
-      description: "Melon seed soup with vegetables and meat",
-      image: "🍲",
-      price: "$18.99"
-    }
-  ];
-
-  const testimonials = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      text: "Amazing food and great service! Perfect stop on our road trip.",
-      rating: 5
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      text: "Authentic African cuisine that reminds me of home. Highly recommended!",
-      rating: 5
-    },
-    {
-      id: 3,
-      name: "Emma Davis",
-      text: "Clean facilities and delicious meals. Will definitely return.",
-      rating: 5
-    }
-  ];
+  const [featuredDishes, setFeaturedDishes] = useState<MenuItem[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const services = [
-    { name: "Corporate Catering", icon: "🏢" },
-    { name: "Event Catering", icon: "🎉" },
-    { name: "Take-away Services", icon: "🥡" },
-    { name: "Group Meals", icon: "👥" }
+    { name: "Corporate Catering", image: "/images/gallery/services1.webp" },
+    { name: "Event Catering", image: "/images/cat-new.webp" },
+    { name: "Take-away Services", image: "/images/takeaway-services.webp" },
+    { name: "Group Meals", image: "/images/group-meals.webp" }
   ];
 
   const facilities = [
-    { name: "Clean Washrooms", icon: "🚿" },
-    { name: "Secure Parking", icon: "🅿️" },
-    { name: "Outdoor Seating", icon: "🌳" },
-    { name: "Family Areas", icon: "👨‍👩‍👧‍👦" }
+    { name: "Clean Washrooms", image: "/images/clean-washrooms.webp" },
+    { name: "Secure Parking", image: "/images/secure-parking.webp" },
+    { name: "Outdoor Seating", image: "/images/outdoor-sitting.webp" },
+    { name: "Family Areas", image: "/images/f-areas.webp" }
   ];
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [dishesData, testimonialsData] = await Promise.all([
+          getMenuItems(),
+          getTestimonials(true)
+        ]);
+
+        if (dishesData.length > 0) {
+          setFeaturedDishes(
+            dishesData.slice(0, 3).map((dish) => ({
+              ...dish,
+              image: normalizeMenuImagePath(dish.image),
+            })),
+          );
+        } else {
+          setFeaturedDishes([
+            {
+              id: "1",
+              name: "Beef Pilau",
+              description: "Fragrant rice dish cooked with tender beef and aromatic spices.",
+              image: "/images/menu/beef-pilau.webp",
+              price: 15.99,
+              category: "Main Meals",
+              available: true,
+              ingredients: []
+            },
+            {
+              id: "2",
+              name: "Authentic Katogo",
+              description: "Hearty breakfast blend of matooke, cassava, and offals - a traveler favorite.",
+              image: "/images/menu/katogo.webp",
+              price: 12.99,
+              category: "Local Specialties",
+              available: true,
+              ingredients: []
+            },
+            {
+              id: "3",
+              name: "Whole Fried Tilapia",
+              description: "Crispy whole tilapia fish, seasoned and deep-fried to perfection.",
+              image: "/images/menu/whole-tilapia.webp",
+              price: 18.99,
+              category: "Main Meals",
+              available: true,
+              ingredients: []
+            }
+          ]);
+        }
+
+        if (testimonialsData.length > 0) {
+          setTestimonials(testimonialsData);
+        } else {
+          setTestimonials([
+            { id: "1", name: "Nakato Sarah", text: "Amazing food and great service! Perfect stop on our road trip along Jinja-Busia Highway.", rating: 5, featured: true },
+            { id: "2", name: "Okello David", text: "Authentic African cuisine that reminds me of home. Best pilau in Magamaga!", rating: 5, featured: true },
+            { id: "3", name: "Mwesigye Emma", text: "Clean facilities and delicious meals. A must-visit food stop near Jinja.", rating: 5, featured: true }
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching home data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (testimonials.length === 0) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % testimonials.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [testimonials.length]);
 
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -100]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 z-10" />
-        <div className="w-full h-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="text-6xl mb-4">🍽️</div>
-            <h3 className="text-2xl font-bold">Authentic African Cuisine</h3>
-          </div>
-        </div>
+      <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
         <motion.div
+          style={{ y: y1 }}
+          className="absolute inset-0 z-0"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50 z-10" />
+          <Image
+            src="/images/authentic-cuisine.webp"
+            alt="Authentic African Cuisine at Kiston Highway Restaurant Magamaga"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+        </motion.div>
+
+        <motion.div
+          style={{ y: y2, opacity }}
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           className="relative z-20 text-center text-white px-4 max-w-4xl mx-auto"
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 font-poppins">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 font-[family-name:var(--font-playfair)] text-[#e07b22] drop-shadow-2xl tracking-tight">
             Authentic African Cuisine
           </h1>
-          <p className="text-xl md:text-2xl mb-8 font-inter">
-            Fresh, flavorful meals for travelers and families on the go
+          <p className="text-xl md:text-2xl mb-8 font-sans font-medium text-amber-100">
+            Safe, clean, and delicious roadside food stop near Magamaga Trading Centre along Jinja-Busia Highway.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -106,8 +153,8 @@ const Home = () => {
               Explore Menu
             </Link>
             <a
-              href="tel:+1234567890"
-              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
+              href="tel:+256700102281"
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full text-lg font-sans font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
             >
               <Phone size={20} />
               Call Now
@@ -125,29 +172,39 @@ const Home = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Featured Dishes</h2>
-            <p className="text-xl text-gray-600">Try our most popular African specialties</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight font-[family-name:var(--font-playfair)]">Featured Dishes</h2>
+            <p className="text-xl text-gray-600 font-sans">Try our most popular African specialties on the Jinja–Busia Road</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {featuredDishes.map((dish, index) => (
               <motion.div
-                key={dish.id}
+                key={dish.id || index}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.2 }}
                 className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
               >
-                <div className="relative h-64 bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                  <div className="text-8xl">{dish.image}</div>
+                <div className="relative h-64">
+                  <Image
+                    src={dish.image}
+                    alt={`${dish.name} - Best food in Magamaga`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    quality={85}
+                    className="object-cover"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{dish.name}</h3>
                   <p className="text-gray-600 mb-4">{dish.description}</p>
                   <div className="flex justify-center">
-                    <button className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full transition-colors duration-200">
+                    <Link
+                      href="/booking"
+                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full transition-colors duration-200"
+                    >
                       Order Now
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
@@ -165,21 +222,29 @@ const Home = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
-            <p className="text-xl text-gray-600">More than just a restaurant</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight">Our Services</h2>
+            <p className="text-xl text-gray-600">Traveler stopover and event catering near Jinja</p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {services.map((service, index) => (
               <motion.div
                 key={service.name}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="text-center"
+                className="group relative overflow-hidden rounded-2xl aspect-square shadow-md"
               >
-                <div className="text-6xl mb-4">{service.icon}</div>
-                <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                <Image
+                  src={service.image}
+                  alt={`${service.name} for travelers on Jinja–Busia Highway`}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+                  <h3 className="text-lg font-bold">{service.name}</h3>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -195,21 +260,29 @@ const Home = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Facilities</h2>
-            <p className="text-xl text-gray-600">Comfort and convenience for all travelers</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight">Our Facilities</h2>
+            <p className="text-xl text-gray-600">Clean restaurant Jinja–Busia Highway with secure parking</p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {facilities.map((facility, index) => (
               <motion.div
                 key={facility.name}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="text-center bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors duration-200"
+                className="group relative overflow-hidden rounded-2xl aspect-square shadow-md"
               >
-                <div className="text-4xl mb-4">{facility.icon}</div>
-                <h3 className="text-lg font-semibold text-gray-900">{facility.name}</h3>
+                <Image
+                  src={facility.image}
+                  alt={`${facility.name} - Essential for highway stopovers`}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+                  <h3 className="text-lg font-bold">{facility.name}</h3>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -226,7 +299,7 @@ const Home = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold mb-4">What Our Customers Say</h2>
-            <p className="text-xl text-amber-100">Trusted by travelers and families</p>
+            <p className="text-xl text-amber-100">Most recommended stopover restaurant Jinja–Busia</p>
           </motion.div>
 
           <div className="relative">
@@ -277,19 +350,19 @@ const Home = () => {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">Find Us on the Highway</h2>
+              <h2 className="text-4xl font-bold text-amber-600 mb-6 uppercase tracking-tight">Best Stopover on the Highway</h2>
               <p className="text-xl text-gray-600 mb-8">
-                Conveniently located at Mile Marker 45 on Highway 123. Perfect stop for your journey.
+                Conveniently located in Magamaga, along the Jinja-Busia Highway. We are the perfect bus stop restaurant for drivers, travelers, and tourists near Jinja.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <a
+                <Link
                   href="/booking"
                   className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-colors duration-200 text-center"
                 >
                   Book a Table
-                </a>
+                </Link>
                 <a
-                  href="https://wa.me/1234567890"
+                  href="https://wa.me/256700102281"
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full text-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={20} />
@@ -302,18 +375,17 @@ const Home = () => {
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8 }}
-              className="rounded-2xl overflow-hidden shadow-lg"
+              className="rounded-2xl overflow-hidden shadow-lg h-[384px]"
             >
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.221990877396!2d-74.00369368459418!3d40.71312947933185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a316ba4fe6d%3A0x1b3d2c6b8c4c4c4c!2sHighway%20123%2C%20Mile%20Marker%2045!5e0!3m2!1sen!2sus!4v1703123456789!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3989.764516245139!2d33.365280!3d0.523296!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMMKwMzEnMjMuOSJOIDMzwrAyMTo1NS4wIkU!5e0!3m2!1sen!2sug!4v1707500000000!5m2!1sen!2sug"
                 width="100%"
-                height="384"
+                height="100%"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Keystone Highway Restaurant Location"
-                className="rounded-2xl"
+                title="Kiston Highway Restaurant Magamaga Location"
               ></iframe>
             </motion.div>
           </div>
@@ -324,3 +396,4 @@ const Home = () => {
 };
 
 export default Home;
+

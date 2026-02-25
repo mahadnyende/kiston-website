@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Users, MessageSquare, CheckCircle } from "lucide-react";
-import { createBooking } from "@/lib/firebase-utils";
+import { createBooking, generateWhatsAppLink } from "@/lib/firebase-utils";
 
 const Booking = () => {
   const [formData, setFormData] = useState({
@@ -19,11 +20,6 @@ const Booking = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const timeSlots = [
-    "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", "1:00 PM", "1:30 PM",
-    "2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM", "4:00 PM", "4:30 PM",
-    "5:00 PM", "5:30 PM", "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM", "8:00 PM"
-  ];
 
   const occasions = [
     "Casual Dining",
@@ -47,8 +43,23 @@ const Booking = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // Construct WhatsApp message immediately
+    const whatsappNumber = "256700102281";
+    const whatsappMessage = `*New Reservation Request (Kiston Website)*\n\n` +
+      `👤 *Name:* ${formData.name}\n` +
+      `📞 *Phone:* ${formData.phone}\n` +
+      `📧 *Email:* ${formData.email || 'N/A'}\n` +
+      `📅 *Date:* ${formData.date}\n` +
+      `⏰ *Time:* ${formData.time}\n` +
+      `👥 *Guests:* ${formData.guests}\n` +
+      `✨ *Occasion:* ${formData.occasion || 'N/A'}\n` +
+      `📝 *Special Requests:* ${formData.specialRequests || 'N/A'}`;
+
+    const waLink = generateWhatsAppLink(whatsappNumber, whatsappMessage);
+
     try {
-      await createBooking({
+      // Non-blocking Firebase submission
+      createBooking({
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -57,9 +68,12 @@ const Booking = () => {
         guests: parseInt(formData.guests),
         occasion: formData.occasion || undefined,
         specialRequests: formData.specialRequests || undefined
-      });
+      }).catch(err => console.error('Firebase save failed, but redirecting to WhatsApp:', err));
 
       setIsSubmitted(true);
+      
+      // Immediate Redirection
+      window.open(waLink, '_blank');
 
       // Reset form after showing success
       setTimeout(() => {
@@ -76,8 +90,9 @@ const Booking = () => {
         });
       }, 5000);
     } catch (error) {
-      console.error('Error creating booking:', error);
-      alert('Failed to create booking. Please try again.');
+      console.error('Submission error:', error);
+      // Even if everything fails, we still try to open WhatsApp as a fallback if waLink is ready
+      window.open(waLink, '_blank');
     } finally {
       setIsSubmitting(false);
     }
@@ -96,14 +111,20 @@ const Booking = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+        <Image
+          src="/images/booking-hero.webp"
+          alt="Make a Reservation"
+          fill
+          priority
+          className="object-cover brightness-50"
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
-            className="text-5xl font-bold mb-4 font-poppins"
+            className="text-5xl font-bold mb-4 font-[family-name:var(--font-playfair)] text-[#e07b22] drop-shadow-2xl tracking-tight"
           >
             Make a Reservation
           </motion.h1>
@@ -111,7 +132,7 @@ const Booking = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="text-xl font-inter max-w-3xl mx-auto"
+            className="text-xl font-sans font-medium max-w-3xl mx-auto text-amber-100 italic"
           >
             Reserve your table for an unforgettable dining experience.
             We recommend booking in advance, especially for weekends and special occasions.
@@ -170,13 +191,12 @@ const Booking = () => {
 
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
+                      Email Address
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      required
                       value={formData.email}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
@@ -207,38 +227,32 @@ const Booking = () => {
                       <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
                         Time *
                       </label>
-                      <select
+                      <input
+                        type="time"
                         id="time"
                         name="time"
                         required
                         value={formData.time}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
-                      >
-                        <option value="">Select time</option>
-                        {timeSlots.map((slot) => (
-                          <option key={slot} value={slot}>{slot}</option>
-                        ))}
-                      </select>
+                      />
                     </div>
 
                     <div>
                       <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-2">
                         Number of Guests *
                       </label>
-                      <select
+                      <input
+                        type="number"
                         id="guests"
                         name="guests"
                         required
+                        min="1"
                         value={formData.guests}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors duration-200"
-                      >
-                        <option value="">Select guests</option>
-                        {[...Array(20)].map((_, i) => (
-                          <option key={i + 1} value={i + 1}>{i + 1} {i === 0 ? 'Guest' : 'Guests'}</option>
-                        ))}
-                      </select>
+                        placeholder="0"
+                      />
                     </div>
                   </div>
 
@@ -278,9 +292,8 @@ const Booking = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 ${
-                      isSubmitting ? "opacity-75 cursor-not-allowed" : ""
-                    }`}
+                    className={`w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 ${isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                      }`}
                   >
                     {isSubmitting ? (
                       <>
@@ -345,22 +358,16 @@ const Booking = () => {
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Need Help?</h3>
                 <div className="space-y-3">
                   <a
-                    href="tel:+1234567890"
-                    className="flex items-center gap-3 text-indigo-600 hover:text-indigo-700 transition-colors duration-200"
+                    href="tel:+256700102281"
+                    className="flex items-center gap-3 text-amber-600 hover:text-amber-700 transition-colors duration-200"
                   >
-                    <div className="bg-indigo-100 p-2 rounded-full">
-                      📞
-                    </div>
-                    <span className="font-medium">Call Us</span>
+                    <span className="font-sans font-bold">Call Us: +256 700 102281</span>
                   </a>
                   <a
-                    href="https://wa.me/1234567890"
+                    href="https://wa.me/256700102281"
                     className="flex items-center gap-3 text-green-600 hover:text-green-700 transition-colors duration-200"
                   >
-                    <div className="bg-green-100 p-2 rounded-full">
-                      💬
-                    </div>
-                    <span className="font-medium">WhatsApp</span>
+                    <span className="font-sans font-bold">WhatsApp Us</span>
                   </a>
                 </div>
               </div>
@@ -368,19 +375,12 @@ const Booking = () => {
               {/* Hours */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Operating Hours</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Mon - Fri</span>
-                    <span className="font-medium">6:00 AM - 10:00 PM</span>
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
+                    <span className="text-amber-900 font-bold uppercase tracking-tight">Open 24 Hours</span>
+                    <span className="bg-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold">24/7</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Saturday</span>
-                    <span className="font-medium">7:00 AM - 11:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Sunday</span>
-                    <span className="font-medium">8:00 AM - 9:00 PM</span>
-                  </div>
+                  <p className="text-gray-600 text-center italic">We never close! Serving you day and night.</p>
                 </div>
               </div>
             </motion.div>

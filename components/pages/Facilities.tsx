@@ -3,87 +3,70 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Wifi, Car, Trees, Sun, Users, Shield } from "lucide-react";
 
 const Facilities = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const facilities = [
     {
-      icon: <Shield className="w-8 h-8" />,
       title: "Clean Washrooms",
-      description: "Well-maintained, hygienic restroom facilities available 24/7 for your comfort.",
-      image: "/images/washrooms.jpg",
+      description: "Well-maintained, hygienic restroom facilities available 24/7 for travelers on the Jinja–Busia Road.",
+      image: "/images/clean-washrooms.webp",
       features: ["24/7 access", "Regular cleaning", "Hand sanitizers", "Family facilities"]
     },
     {
-      icon: <Car className="w-8 h-8" />,
       title: "Secure Parking",
-      description: "Safe and spacious parking for cars, trucks, and RVs with 24/7 security monitoring.",
-      image: "/images/parking.jpg",
-      features: ["24/7 security", "Large vehicle spaces", "Well-lit area", "Free parking"]
+      description: "Safe and spacious parking for cars, trucks, and RVs with 24/7 security monitoring near Magamaga.",
+      image: "/images/secure-parking.webp",
+      features: ["24/7 security", "Large vehicle spaces", "Truck & RV friendly", "Free parking"]
     },
     {
-      icon: <Trees className="w-8 h-8" />,
       title: "Beautiful Gardens",
-      description: "Relaxing outdoor garden spaces perfect for enjoying your meal in a serene environment.",
-      image: "/images/gardens.jpg",
+      description: "Relaxing outdoor garden spaces perfect for enjoying your meal in a serene environment along the highway.",
+      image: "/images/beautiful-gardens.webp",
       features: ["Shaded seating", "Landscaped areas", "Peaceful atmosphere", "Pet-friendly zones"]
     },
     {
-      icon: <Sun className="w-8 h-8" />,
       title: "Outdoor Seating",
-      description: "Comfortable outdoor dining areas with umbrellas and comfortable seating.",
-      image: "/images/outdoor-seating.jpg",
+      description: "Comfortable outdoor dining areas with umbrellas and scenic views of the Magamaga landscape.",
+      image: "/images/outdoor-seating-new.webp",
       features: ["Covered areas", "Comfortable seating", "Scenic views", "Weather protection"]
     },
     {
-      icon: <Users className="w-8 h-8" />,
       title: "Family Areas",
       description: "Dedicated family-friendly zones with play areas and comfortable seating for all ages.",
-      image: "/images/family-areas.jpg",
+      image: "/images/f-areas.webp",
       features: ["Kids play area", "Family seating", "High chairs", "Changing facilities"]
     },
     {
-      icon: <Wifi className="w-8 h-8" />,
       title: "Lighting & Security",
-      description: "Well-lit premises with comprehensive security measures for peace of mind.",
-      image: "/images/security.jpg",
+      description: "Well-lit premises with comprehensive security measures for peace of mind while traveling at night.",
+      image: "/images/night-parking.webp",
       features: ["Bright lighting", "Security cameras", "Emergency phones", "Staff presence"]
     }
-  ];
-
-  const galleryImages = [
-    { src: "/images/facility-1.jpg", alt: "Clean and modern washrooms", category: "Facilities" },
-    { src: "/images/facility-2.jpg", alt: "Spacious parking area", category: "Parking" },
-    { src: "/images/facility-3.jpg", alt: "Beautiful garden seating", category: "Gardens" },
-    { src: "/images/facility-4.jpg", alt: "Outdoor dining area", category: "Outdoor" },
-    { src: "/images/facility-5.jpg", alt: "Family-friendly play area", category: "Family" },
-    { src: "/images/facility-6.jpg", alt: "Well-lit security area", category: "Security" },
-    { src: "/images/facility-7.jpg", alt: "Scenic garden view", category: "Gardens" },
-    { src: "/images/facility-8.jpg", alt: "Comfortable outdoor seating", category: "Outdoor" },
-    { src: "/images/facility-9.jpg", alt: "Modern restroom facilities", category: "Facilities" }
   ];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-900 to-green-800" />
+      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/images/facilities-hero.jpg"
-          alt="Keystone Highway Restaurant facilities"
+          src="/images/facilities-hero.webp"
+          alt="Our Facilities at Kiston Highway Restaurant"
           fill
-          className="object-cover opacity-30"
+          priority
+          sizes="100vw"
+          className="object-cover brightness-50"
         />
+        <div className="absolute inset-0 bg-black/30 z-0" />
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
           className="relative z-10 text-center text-white px-4"
         >
-          <h1 className="text-5xl font-bold mb-4 font-poppins">Our Facilities</h1>
-          <p className="text-xl font-inter">Comfort and convenience for every traveler</p>
+          <h1 className="text-5xl font-bold mb-4 font-[family-name:var(--font-playfair)] text-[#e07b22] drop-shadow-2xl tracking-tight">Our Facilities</h1>
+          <p className="text-xl font-sans font-medium mb-2 italic">Clean restaurant Jinja–Busia Highway and safe food stop Magamaga</p>
         </motion.div>
       </section>
 
@@ -96,8 +79,8 @@ const Facilities = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">What We Offer</h2>
-            <p className="text-xl text-gray-600">Modern amenities designed for your comfort</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight">What We Offer</h2>
+            <p className="text-xl text-gray-600">Modern amenities for stopover travelers in Magamaga</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -113,15 +96,11 @@ const Facilities = () => {
                 <div className="relative h-48">
                   <Image
                     src={facility.image}
-                    alt={facility.title}
+                    alt={`${facility.title} at Kiston - Safe and secure food stop in Magamaga`}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full p-3">
-                    <div className="text-green-600">
-                      {facility.icon}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="p-6">
@@ -143,48 +122,6 @@ const Facilities = () => {
         </div>
       </section>
 
-      {/* Gallery Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Facility Gallery</h2>
-            <p className="text-xl text-gray-600">Take a visual tour of our amenities</p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {galleryImages.map((image, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="relative group cursor-pointer overflow-hidden rounded-2xl"
-                onClick={() => setSelectedImage(image.src)}
-              >
-                <div className="aspect-square relative">
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span className="text-gray-900 font-medium">{image.category}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Why Choose Us */}
       <section className="py-20 bg-green-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -195,7 +132,7 @@ const Facilities = () => {
             className="text-center mb-16"
           >
             <h2 className="text-4xl font-bold mb-4">Why Travelers Choose Us</h2>
-            <p className="text-xl text-green-100">More than just a rest stop</p>
+            <p className="text-xl text-green-100">The most trusted highway restaurant in Magamaga</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -203,12 +140,19 @@ const Facilities = () => {
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-center"
+              className="text-center flex flex-col items-center"
             >
-              <div className="text-6xl mb-4">🛡️</div>
+              <div className="mb-6 relative w-20 h-20">
+                <Image
+                  src="/images/icons/safe-secure.webp"
+                  alt="Safe and Secure roadside restaurant"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <h3 className="text-2xl font-semibold mb-4">Safe & Secure</h3>
               <p className="text-green-100">
-                24/7 security monitoring and well-lit premises ensure your safety and peace of mind.
+                24/7 security monitoring and well-lit premises ensure your safety and peace of mind on the road.
               </p>
             </motion.div>
 
@@ -216,12 +160,19 @@ const Facilities = () => {
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-center"
+              className="text-center flex flex-col items-center"
             >
-              <div className="text-6xl mb-4">🏡</div>
+              <div className="mb-6 relative w-20 h-20">
+                <Image
+                  src="/images/icons/home-away.webp"
+                  alt="Home Away comfort for highway travelers"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <h3 className="text-2xl font-semibold mb-4">Home Away</h3>
               <p className="text-green-100">
-                Comfortable facilities that feel like home, perfect for families and long-distance travelers.
+                Comfortable facilities that feel like home, perfect for families and long-distance travelers near Jinja.
               </p>
             </motion.div>
 
@@ -229,12 +180,19 @@ const Facilities = () => {
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-center"
+              className="text-center flex flex-col items-center"
             >
-              <div className="text-6xl mb-4">🌿</div>
+              <div className="mb-6 relative w-20 h-20">
+                <Image
+                  src="/images/icons/natural-beauty.webp"
+                  alt="Natural beauty and refreshing gardens in Magamaga"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <h3 className="text-2xl font-semibold mb-4">Natural Beauty</h3>
               <p className="text-green-100">
-                Surrounded by beautiful gardens and outdoor spaces for a refreshing break from the road.
+                Surrounded by beautiful gardens and outdoor spaces for a refreshing break from the Jinja-Busia Highway.
               </p>
             </motion.div>
           </div>
@@ -258,7 +216,7 @@ const Facilities = () => {
           >
             <Image
               src={selectedImage}
-              alt="Facility image"
+              alt="Facility image - Kiston Magamaga"
               width={800}
               height={600}
               className="w-full h-auto rounded-2xl"
@@ -277,3 +235,4 @@ const Facilities = () => {
 };
 
 export default Facilities;
+

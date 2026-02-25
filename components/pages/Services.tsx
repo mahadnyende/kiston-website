@@ -1,10 +1,10 @@
-
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Users, Clock, Phone, Mail, MessageCircle, CheckCircle } from "lucide-react";
-import { createCateringInquiry } from "@/lib/firebase-utils";
+import { createCateringInquiry, generateWhatsAppLink } from "@/lib/firebase-utils";
 
 const Services = () => {
   const [formData, setFormData] = useState({
@@ -22,28 +22,28 @@ const Services = () => {
 
   const services = [
     {
-      icon: "🏢",
       title: "Corporate Catering",
-      description: "Professional catering services for business meetings, conferences, and corporate events.",
+      image: "/images/gallery/services1.webp",
+      description: "Professional catering services for business meetings, conferences, and corporate events in Magamaga and Jinja.",
       features: ["Custom menus", "Professional service", "Setup & cleanup", "Dietary accommodations"]
     },
     {
-      icon: "🎉",
       title: "Event Catering",
-      description: "Make your special occasions unforgettable with our authentic African cuisine.",
+      image: "/images/cat-new.webp",
+      description: "Make your special occasions unforgettable with our authentic African cuisine roadside catering.",
       features: ["Wedding receptions", "Birthday parties", "Anniversaries", "Graduation parties"]
     },
     {
-      icon: "👥",
       title: "Group & Traveler Meals",
-      description: "Perfect for tour groups, family gatherings, and traveler pit stops.",
+      image: "/images/group-meals.webp",
+      description: "Perfect bus stop restaurant for tour groups, family gatherings, and bus traveler pit stops.",
       features: ["Bulk pricing", "Quick service", "Variety options", "Take-away available"]
     },
     {
-      icon: "🥡",
       title: "Take-away Services",
-      description: "Convenient take-away options for those on the go.",
-      features: ["Fresh preparation", "Quick pickup", "Microwave-safe packaging", "Extended hours"]
+      image: "/images/takeaway-services.webp",
+      description: "Convenient take-away options for those on the go along the Jinja-Busia Highway.",
+      features: ["Fresh preparation", "Quick pickup", "Traveler packaging", "Extended hours"]
     }
   ];
 
@@ -64,33 +64,81 @@ const Services = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Handle form submission (integrate with Firebase later)
-    console.log("Form submitted:", formData);
-    alert("Thank you for your inquiry! We'll contact you soon.");
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      eventType: "",
-      date: "",
-      time: "",
-      guests: "",
-      message: ""
-    });
+    setIsSubmitting(true);
+    setIsSubmitted(false);
+
+    // Construct WhatsApp message immediately
+    const whatsappNumber = "256700102281";
+    const whatsappMessage = `*New Catering Inquiry (Kiston Website)*\n\n` +
+      `👤 *Name:* ${formData.name}\n` +
+      `📞 *Phone:* ${formData.phone}\n` +
+      `📧 *Email:* ${formData.email || 'N/A'}\n` +
+      `🎭 *Event Type:* ${formData.eventType}\n` +
+      `📅 *Date:* ${formData.date}\n` +
+      `⏰ *Time:* ${formData.time || 'TBD'}\n` +
+      `👥 *Guests:* ${formData.guests}\n` +
+      `📝 *Requirements:* ${formData.message || 'N/A'}`;
+
+    const waLink = generateWhatsAppLink(whatsappNumber, whatsappMessage);
+
+    try {
+      // Non-blocking Firebase submission
+      createCateringInquiry({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        eventType: formData.eventType,
+        date: formData.date,
+        time: formData.time,
+        guests: parseInt(formData.guests),
+        message: formData.message
+      }).catch(err => console.error("Firebase save failed, but redirecting to WhatsApp:", err));
+
+      setIsSubmitted(true);
+      
+      // Immediate Redirection
+      window.open(waLink, '_blank');
+
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        eventType: "",
+        date: "",
+        time: "",
+        guests: "",
+        message: ""
+      });
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setIsSubmitted(false), 5000);
+    } catch (error) {
+      console.error("Submission error:", error);
+      // Fallback redirection
+      window.open(waLink, '_blank');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-amber-900 to-amber-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
+        <Image
+          src="/images/services-hero.webp"
+          alt="Services and Roadside Catering at Kiston Highway Magamaga"
+          fill
+          priority
+          className="object-cover brightness-50"
+        />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
-            className="text-5xl font-bold mb-4 font-poppins"
+            className="text-5xl font-bold mb-4 font-[family-name:var(--font-playfair)] text-[#e07b22] drop-shadow-2xl tracking-tight"
           >
             Services & Catering
           </motion.h1>
@@ -98,10 +146,9 @@ const Services = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="text-xl font-inter max-w-3xl mx-auto"
+            className="text-xl font-sans font-medium max-w-3xl mx-auto text-amber-100 italic"
           >
-            From corporate events to family gatherings, we provide exceptional catering services
-            with authentic African cuisine that impresses every guest.
+            From corporate events near Jinja to bus group stopovers in Magamaga, we provide exceptional catering services across the highway.
           </motion.p>
         </div>
       </section>
@@ -115,8 +162,8 @@ const Services = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Services</h2>
-            <p className="text-xl text-gray-600">Tailored solutions for every occasion</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight">Our Services</h2>
+            <p className="text-xl text-gray-600">Event and roadside catering near Magamaga Trading Centre</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -126,19 +173,29 @@ const Services = () => {
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: index * 0.1 }}
-                className="bg-gray-50 rounded-2xl p-8 hover:bg-gray-100 transition-colors duration-300"
+                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group"
               >
-                <div className="text-6xl mb-6">{service.icon}</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{service.title}</h3>
-                <p className="text-gray-600 mb-6">{service.description}</p>
-                <ul className="space-y-2">
-                  {service.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center text-gray-700">
-                      <span className="w-2 h-2 bg-amber-600 rounded-full mr-3"></span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                <div className="relative h-64">
+                  <Image
+                    src={service.image}
+                    alt={`${service.title} - Trusted food stop on the highway`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{service.title}</h3>
+                  <p className="text-gray-600 mb-6">{service.description}</p>
+                  <ul className="space-y-2">
+                    {service.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center text-gray-700">
+                        <span className="w-2 h-2 bg-amber-600 rounded-full mr-3"></span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -154,8 +211,8 @@ const Services = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Request a Quote</h2>
-            <p className="text-xl text-gray-600">Get a personalized catering quote for your event</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight">Request a Quote</h2>
+            <p className="text-xl text-gray-600">Professional event catering near Jinja and Magamaga</p>
           </motion.div>
 
           <motion.form
@@ -194,7 +251,7 @@ const Services = () => {
                   value={formData.phone}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="+1 (234) 567-8900"
+                  placeholder="+256..."
                 />
               </div>
 
@@ -298,9 +355,8 @@ const Services = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-8 py-4 rounded-full text-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 ${
-                  isSubmitting ? "opacity-75 cursor-not-allowed bg-amber-500" : "bg-amber-600 hover:bg-amber-700"
-                } text-white`}
+                className={`px-8 py-4 rounded-full text-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2 ${isSubmitting ? "opacity-75 cursor-not-allowed bg-amber-500" : "bg-amber-600 hover:bg-amber-700"
+                  } text-white`}
               >
                 {isSubmitting ? (
                   <>
@@ -314,25 +370,27 @@ const Services = () => {
                 )}
               </button>
               <p className="text-sm text-gray-500 mt-4">
-                We&apos;ll respond within 24 hours with a personalized quote.
+                We&apos;ll respond within 24 hours with a personalized quote for your roadside event.
               </p>
             </div>
 
             {/* Success Message */}
-            {isSubmitted && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="mt-6 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg flex items-center gap-3"
-              >
-                <CheckCircle className="w-6 h-6" />
-                <div>
-                  <p className="font-semibold">Inquiry Submitted Successfully!</p>
-                  <p className="text-sm">We&apos;ll contact you within 24 hours with a personalized quote.</p>
-                </div>
-              </motion.div>
-            )}
+            <AnimatePresence>
+              {isSubmitted && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="mt-6 bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg flex items-center gap-3"
+                >
+                  <CheckCircle className="w-6 h-6" />
+                  <div>
+                    <p className="font-semibold">Inquiry Submitted Successfully!</p>
+                    <p className="text-sm">We&apos;ll contact you within 24 hours with a personalized quote.</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.form>
         </div>
       </section>
@@ -346,8 +404,8 @@ const Services = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Get in Touch</h2>
-            <p className="text-xl text-gray-600">Multiple ways to reach us for your catering needs</p>
+            <h2 className="text-4xl font-bold text-amber-600 mb-4 uppercase tracking-tight">Get in Touch</h2>
+            <p className="text-xl text-gray-600">The most accessible food stop near Magamaga Trading Centre</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -357,16 +415,16 @@ const Services = () => {
               transition={{ duration: 0.8, delay: 0.1 }}
               className="text-center"
             >
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-green-600" />
+              <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-8 h-8 text-amber-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Call Us</h3>
-              <p className="text-gray-600 mb-4">Speak directly with our catering specialists</p>
+              <p className="text-gray-600 mb-4">Direct contact for travelers and event planners</p>
               <a
-                href="tel:+1234567890"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium transition-colors duration-200"
+                href="tel:+256700102281"
+                className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full font-medium transition-colors duration-200"
               >
-                +1 (234) 567-8900
+                +256 700 102281
               </a>
             </motion.div>
 
@@ -376,16 +434,16 @@ const Services = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-center"
             >
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-blue-600" />
+              <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-amber-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Us</h3>
-              <p className="text-gray-600 mb-4">Send us details about your event</p>
+              <p className="text-gray-600 mb-4">Send us details for roadside catering queries</p>
               <a
-                href="mailto:catering@keystonehighway.com"
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium transition-colors duration-200"
+                href="mailto:catering@kistonhighway.com"
+                className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-full font-medium transition-colors duration-200"
               >
-                catering@keystonehighway.com
+                catering@kistonhighway.com
               </a>
             </motion.div>
 
@@ -399,9 +457,9 @@ const Services = () => {
                 <MessageCircle className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">WhatsApp</h3>
-              <p className="text-gray-600 mb-4">Quick inquiries and instant responses</p>
+              <p className="text-gray-600 mb-4">Quick responses for drivers and travelers</p>
               <a
-                href="https://wa.me/1234567890"
+                href="https://wa.me/256700102281"
                 className="inline-block bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-colors duration-200"
               >
                 WhatsApp Us
