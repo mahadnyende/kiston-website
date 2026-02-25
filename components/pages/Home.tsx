@@ -41,10 +41,34 @@ const FEATURED_DISHES_FALLBACK: MenuItem[] = [
   },
 ];
 
+const TESTIMONIALS_FALLBACK: Testimonial[] = [
+  {
+    id: "1",
+    name: "Nakato Sarah",
+    text: "Amazing food and great service! Perfect stop on our road trip along Jinja-Busia Highway.",
+    rating: 5,
+    featured: true,
+  },
+  {
+    id: "2",
+    name: "Okello David",
+    text: "Authentic African cuisine that reminds me of home. Best pilau in Magamaga!",
+    rating: 5,
+    featured: true,
+  },
+  {
+    id: "3",
+    name: "Mwesigye Emma",
+    text: "Clean facilities and delicious meals. A must-visit food stop near Jinja.",
+    rating: 5,
+    featured: true,
+  },
+];
+
 const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [featuredDishes] = useState<MenuItem[]>(FEATURED_DISHES_FALLBACK);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(TESTIMONIALS_FALLBACK);
 
   const services = [
     { name: "Corporate Catering", image: "/images/gallery/services1.webp" },
@@ -64,16 +88,9 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const testimonialsData = await getTestimonials(true);
-
-        if (testimonialsData.length > 0) {
-          setTestimonials(testimonialsData);
-        } else {
-          setTestimonials([
-            { id: "1", name: "Nakato Sarah", text: "Amazing food and great service! Perfect stop on our road trip along Jinja-Busia Highway.", rating: 5, featured: true },
-            { id: "2", name: "Okello David", text: "Authentic African cuisine that reminds me of home. Best pilau in Magamaga!", rating: 5, featured: true },
-            { id: "3", name: "Mwesigye Emma", text: "Clean facilities and delicious meals. A must-visit food stop near Jinja.", rating: 5, featured: true }
-          ]);
-        }
+        setTestimonials(
+          testimonialsData.length > 0 ? testimonialsData : TESTIMONIALS_FALLBACK,
+        );
       } catch (error) {
         console.error("Error fetching home data:", error);
       }
@@ -81,6 +98,10 @@ const Home = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setCurrentSlide(0);
+  }, [testimonials.length]);
 
   useEffect(() => {
     if (testimonials.length === 0) return;
